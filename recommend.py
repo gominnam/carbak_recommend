@@ -6,9 +6,18 @@ from sklearn.metrics.pairwise import cosine_distances
 from sklearn.metrics import mean_squared_error
 from sklearn.neighbors import NearestNeighbors
 
-result = db.basic_query()
-df = pd.DataFrame(result)
-df.columns = ["user_id", "reviewNo", "like"]
+
+use_db = False
+
+if use_db:
+    result = db.basic_query()
+    df = pd.DataFrame(result)
+    df.columns = ["user_id", "reviewNo", "like"]
+else:
+    result = pd.DataFrame({'user_id': [1,1,1,2,2,2,3,3,4], 'reviewNo': [1,4,6,2,3,6,5,1,4], 'like': [1,1,0,0,1,1,0,0,1]})
+    df = pd.DataFrame(result)
+    df.columns = ["user_id", "reviewNo", "like"]
+
 
 def foo():
     global user_like

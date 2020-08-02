@@ -2,7 +2,7 @@ import cx_Oracle
 
 def create_connection():
     # DataSoucreName을 생성
-    dsn = cx_Oracle.makedsn("localhost", 1521, "XE")
+    dsn = cx_Oracle.makedsn("localhost", 49161, "XE")
     db = cx_Oracle.connect("hr2", "1", dsn)
     return db
 

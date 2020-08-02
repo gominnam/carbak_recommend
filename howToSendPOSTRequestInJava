@@ -1,0 +1,39 @@
+
+
+public void post(String requestURL, String message) {
+
+		try{
+		    RequestBody formBody = new FormBody.Builder()
+                    .add("liked_reviews", "1,2,3,4,5")
+                    .build();
+			OkHttpClient client = new OkHttpClient();
+			Request request = new Request.Builder()
+					.url(requestURL)  // "  http://localhost:8000/find_similar_users  이거나,  http://192.168.20.123:8000/find_similar_users  "
+					.post(formBody)
+					.build();
+
+			//비동기 처리 (enqueue 사용)
+			client.newCall(request).enqueue(new Callback() {
+				//비동기 처리를 위해 Callback 구현
+				@Override
+				public void onFailure(Call call, IOException e) {
+					System.out.println("error + Connect Server Error is " + e.toString());
+				}
+
+				@Override
+				public void onResponse(Call call, Response response) throws IOException {
+					System.out.println("Response Body is " + response.body().string());
+					// response.body 가 {"similar_users":[1,2,3,4]} 일거임.
+					// 이거를 파싱해서 가져오면 되는데....
+					String jsonData = responses.body().string();  // https://stackoverflow.com/questions/28221555/how-does-okhttp-get-json-string
+                    JSONObject Jobject = new JSONObject(jsonData);
+                    // response.body() <---> java object (POJO)  i.e. class Review { User reviewer; String comment; Boolean liked; } <---- json을 java class로 바꿔주는 헬퍼들을 deserializer라고 한다. ---- {"user": {"id":1, "nickname": "gogo"}, comment: "이영화재밌네요", "liked": true, "rate": "4.5"}
+				}
+			});
+
+		} catch (Exception e) {
+			System.err.println(e.toString());
+		}
+	}
+
+출처: https://digitalbourgeois.tistory.com/59 [IT 글자국]
