@@ -7,17 +7,9 @@ from sklearn.metrics import mean_squared_error
 from sklearn.neighbors import NearestNeighbors
 
 
-use_db = False
-
-if use_db:
-    result = db.basic_query()
-    df = pd.DataFrame(result)
-    df.columns = ["user_id", "reviewNo", "like"]
-else:
-    result = pd.DataFrame({'user_id': [1,1,1,2,2,2,3,3,4], 'reviewNo': [1,4,6,2,3,6,5,1,4], 'like': [1,1,0,0,1,1,0,0,1]})
-    df = pd.DataFrame(result)
-    df.columns = ["user_id", "reviewNo", "like"]
-
+result = db.basic_query()
+df = pd.DataFrame(result)
+df.columns = ["user_id", "reviewNo", "like"]
 
 def foo():
     global user_like
@@ -27,8 +19,6 @@ def foo():
     likes = np.zeros((n_users, n_reviews))
 
     user_like = df.pivot_table('like', index='user_id', columns='reviewNo').fillna(0)
-    print(user_like)
-    # print(type(user_like))
 
     return user_like.values
 
@@ -49,12 +39,12 @@ def get_mse(pred, actual):
     actual = actual[actual.nonzero()].flatten()
     return mean_squared_error(pred, actual)
 
-def neighbors(input):
+def neighbors(input): # 해당 id 탑 유저 목록
     global user_pred_k, top_k_users
+    k=input
 
     result=foo()
 
-    k=input
     neigh = NearestNeighbors(n_neighbors=k, metric="cosine")
     neigh.fit(result)
 
@@ -62,31 +52,46 @@ def neighbors(input):
 
     user_pred_k = np.zeros(result.shape)
 
-    print(top_k_users[22])
-    print(top_k_users[11])
-
     for i in range(result.shape[0]):
         user_pred_k[i, :] = top_k_distances[i].T.dot(result[top_k_users][i]) / \
                             np.array([np.abs(top_k_distances[i].T).sum(axis=0)]).T
 
 
-def getIdIndex(id):
-    i=0
-    for i in range(len(user_like)-1):
-        if(id == user_like.index[i]):
-            print("나 : ", i)
-            return topRecommendId(i)
+    return True
 
-def topRecommendId(index):
+
+def getIdIndex(id): # 로그인한 id의 db 인덱스 값 얻기
+
+    neighbors(foo().shape[0])
+    list = []
+    for i in range(len(user_like)):
+        if id == user_like.index[i]:
+
+            list += topRecommendId(i)
+
+    return list
+
+
+def topRecommendId(index): # 최종 리턴 함수
     i=0
+    list = []
+
     for i in range(0, 5):
         i = i+1
-        print("top5 : ", top_k_users[index][i])
+        list.append(user_like.index[top_k_users[index][i]])
 
+    # print(list)
+
+    return list
+
+
+# userList = getIdIndex("id22")
 
 if __name__=="__main__":
-    machine()
-    neighbors(foo().shape[0])
+    # machine()
+    # print(foo().shape[0])
+    getIdIndex("id22")
+
     # print(getIdIndex("id30"))
     # print(range(len(user_like)-1))
     # print(top_k_users)
@@ -94,6 +99,6 @@ if __name__=="__main__":
     # print(n_like_train.shape)
     # print(n_like_test)
     # print(user_pred_k)
-    print(np.sqrt(get_mse(user_pred_k, n_like_train)))
-    print(np.sqrt(get_mse(user_pred_k, n_like_test)))
+    # print(np.sqrt(get_mse(user_pred_k, n_like_train)))
+    # print(np.sqrt(get_mse(user_pred_k, n_like_test)))
 
